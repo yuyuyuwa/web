@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人员信息管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Tailwind 配置 - 赛博朋克蓝色调 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-blue': '#00f0ff',
+                        'cyber-dark': '#0d1117',
+                        'cyber-darker': '#070a0f',
+                        'cyber-light': '#64ffda',
+                        'cyber-purple': '#9d4edd',
+                        'cyber-accent': '#ff2a6d',
+                    },
+                    fontFamily: {
+                        cyber: ['Orbitron', 'Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'cyber': '0 0 5px #00f0ff, 0 0 10px #00f0ff, inset 0 0 5px #00f0ff',
+                        'cyber-sm': '0 0 2px #00f0ff, 0 0 5px #00f0ff',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- 赛博朋克风格字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-cyber-dark font-cyber text-gray-200 min-h-screen flex flex-col">
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 左侧导航栏 - 修复布局 -->
+        <aside class="w-64 bg-cyber-darker border-r border-cyber-blue/30 flex-shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out">
+            <div class="flex-shrink-0">
+                <div class="p-4 border-b border-cyber-blue/30">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-users text-cyber-blue text-2xl text-shadow-cyber"></i>
+                        <h1 class="text-xl font-bold text-cyber-blue text-shadow-cyber">人员管理系统</h1>
+                    </div>
+                </div>
+                
+                <nav class="p-4 space-y-1">
+                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-cyber-blue/10 border border-cyber-blue/30 text-cyber-blue hover:bg-cyber-blue/20 transition-all duration-300">
+                        <i class="fas fa-home w-5 text-center"></i>
+                        <span>首页</span>
+                    </a>
+                    
+                    <div class="mt-6 mb-2 px-4 text-xs uppercase text-gray-400">数据统计</div>
+                    
+                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-cyber-blue/10 hover:border border-cyber-blue/30 text-gray-300 hover:text-cyber-blue transition-all duration-300">
+                        <i class="fas fa-id-card w-5 text-center"></i>
+                        <span>人员名单</span>
+                    </a>
+                    
+                    <a href="#" class="flex items-center space-x-3 px-6 py-2 rounded-lg hover:bg-cyber-blue/10 text-gray-300 hover:text-cyber-blue transition-all duration-300">
+                        <i class="fas fa-chart-pie w-5 text-center"></i>
+                        <span>人员统计</span>
+                    </a>
+                    
+                    <a href="#" class="flex items-center space-x-3 px-6 py-2 rounded-lg hover:bg-cyber-blue/10 text-gray-300 hover:text-cyber-blue transition-all duration-300">
+                        <i class="fas fa-clock w-5 text-center"></i>
+                        <span>出勤统计</span>
+                    </a>
+                    
+                    <div class="mt-6 mb-2 px-4 text-xs uppercase text-gray-400">系统设置</div>
+                    
+                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-cyber-blue/10 hover:border border-cyber-blue/30 text-gray-300 hover:text-cyber-blue transition-all duration-300">
+                        <i class="fas fa-cog w-5 text-center"></i>
+                        <span>系统设置</span>
+                    </a>
+                    
+                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-cyber-blue/10 hover:border border-cyber-blue/30 text-gray-300 hover:text-cyber-blue transition-all duration-300">
+                        <i class="fas fa-question-circle w-5 text-center"></i>
+                        <span>帮助中心</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- 管理员信息 - 固定在底部 -->
+            <div class="mt-auto p-4 border-t border-cyber-blue/30">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-cyber-blue/20 border border-cyber-blue/50 flex items-center justify-center">
+                        <i class="fas fa-user text-cyber-blue"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm text-cyber-blue">管理员</div>
+                        <div class="text-xs text-gray-400">系统权限</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- 顶部导航栏 - 赛博朋克风格 -->
+            <header class="bg-cyber-darker border-b border-cyber-blue/30 text-cyber-blue sticky top-0 z-50">
+                <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                    <div class="flex items-center md:hidden">
+                        <button id="menu-toggle" class="p-2 rounded hover:bg-cyber-blue/10 transition-all">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-users text-2xl text-shadow-cyber"></i>
+                        <h1 class="text-xl md:text-2xl font-bold text-shadow-cyber hidden md:block">人员信息管理系统</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <label for="file-upload" class="cursor-pointer bg-cyber-blue/10 border border-cyber-blue/50 text-cyber-blue hover:bg-cyber-blue/20 px-4 py-2 rounded-lg transition-all flex items-center">
+                            <i class="fas fa-file-excel mr-2"></i>
+                            <span>上传Excel文件</span>
+                        </label>
+                        <input id="file-upload" type="file" accept=".xlsx, .xls" class="hidden" />
+                        <button id="reset-btn" class="bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-800 px-4 py-2 rounded-lg transition-all flex items-center" disabled>
+                            <i class="fas fa-redo mr-2"></i>
+                            <span>重置</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-grow container mx-auto px-4 py-6 overflow-auto bg-grid">
+                <!-- 初始状态提示 -->
+                <div id="initial-state" class="flex flex-col items-center justify-center py-16 text-center">
+                    <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-8 max-w-md w-full shadow-cyber-sm">
+                        <div class="text-cyber-blue text-6xl mb-4 text-shadow-cyber">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-cyber-blue mb-2 text-shadow-cyber">上传人员信息表</h2>
+                        <p class="text-gray-400 mb-6">请上传Excel文件以查看和管理人员信息数据</p>
+                        <label for="initial-file-upload" class="cursor-pointer bg-cyber-blue/10 border border-cyber-blue text-cyber-blue hover:bg-cyber-blue/20 px-6 py-3 rounded-lg transition-all inline-flex items-center">
+                            <i class="fas fa-upload mr-2"></i>
+                            <span>选择Excel文件</span>
+                        </label>
+                        <input id="initial-file-upload" type="file" accept=".xlsx, .xls" class="hidden" />
+                    </div>
+                </div>
+
+                <!-- 数据加载状态 -->
+                <div id="loading-state" class="hidden flex flex-col items-center justify-center py-16">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-cyber-blue border-r-4 border-gray-700"></div>
+                    <p class="mt-4 text-cyber-blue">正在加载数据，请稍候...</p>
+                </div>
+
+                <!-- 数据管理界面 -->
+                <div id="data-management" class="hidden space-y-6">
+                    <!-- 数据概览卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-gray-400 text-sm font-medium">总人数</p>
+                                    <p id="total-count" class="text-3xl font-bold text-cyber-blue">0</p>
+                                </div>
+                                <div class="bg-cyber-blue/10 p-3 rounded-lg border border-cyber-blue/30">
+                                    <i class="fas fa-users text-cyber-blue text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-gray-400 text-sm font-medium">在位人数</p>
+                                    <p id="on-duty-count" class="text-3xl font-bold text-cyber-blue">0</p>
+                                </div>
+                                <div class="bg-cyber-blue/10 p-3 rounded-lg border border-cyber-blue/30">
+                                    <i class="fas fa-user-check text-cyber-blue text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-gray-400 text-sm font-medium">病休人数</p>
+                                    <p id="sick-leave-count" class="text-3xl font-bold text-cyber-blue">0</p>
+                                </div>
+                                <div class="bg-cyber-blue/10 p-3 rounded-lg border border-cyber-blue/30">
+                                    <i class="fas fa-procedures text-cyber-blue text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-gray-400 text-sm font-medium">其余人数</p>
+                                    <p id="other-count" class="text-3xl font-bold text-cyber-blue">0</p>
+                                </div>
+                                <div class="bg-cyber-blue/10 p-3 rounded-lg border border-cyber-blue/30">
+                                    <i class="fas fa-ellipsis-h text-cyber-blue text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图表区域 -->
+                    <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                        <h3 class="text-lg font-semibold text-cyber-blue mb-4 flex items-center">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            各单位出勤人数统计
+                        </h3>
+                        <div class="relative h-64">
+                            <canvas id="department-attendance-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <h3 class="text-lg font-semibold text-cyber-blue mb-4 flex items-center">
+                                <i class="fas fa-chart-pie mr-2"></i>
+                                性别分布
+                            </h3>
+                            <div class="relative h-64">
+                                <canvas id="gender-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                            <h3 class="text-lg font-semibold text-cyber-blue mb-4 flex items-center">
+                                <i class="fas fa-chart-bar mr-2"></i>
+                                人员状态分布
+                            </h3>
+                            <div class="relative h-64">
+                                <canvas id="status-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 筛选区域 -->
+                    <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 p-6 hover:shadow-cyber-sm transition-all">
+                        <h3 class="text-lg font-semibold text-cyber-blue mb-4 flex items-center">
+                            <i class="fas fa-filter mr-2"></i>
+                            数据筛选
+                        </h3>
+                        <div id="filter-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <!-- 筛选控件将通过JavaScript动态生成 -->
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-3">
+                            <button id="clear-filters" class="bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-800 px-4 py-2 rounded-lg transition-all flex items-center" disabled>
+                                <i class="fas fa-broom mr-2"></i>
+                                <span>清除筛选</span>
+                            </button>
+                            <button id="apply-filters" class="bg-cyber-blue/10 border border-cyber-blue text-cyber-blue hover:bg-cyber-blue/20 px-4 py-2 rounded-lg transition-all flex items-center" disabled>
+                                <i class="fas fa-search mr-2"></i>
+                                <span>应用筛选</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 表格区域 -->
+                    <div class="bg-cyber-darker rounded-xl border border-cyber-blue/30 overflow-hidden hover:shadow-cyber-sm transition-all">
+                        <div class="p-6 border-b border-cyber-blue/30">
+                            <h3 class="text-lg font-semibold text-cyber-blue flex items-center">
+                                <i class="fas fa-table mr-2"></i>
+                                人员信息列表
+                                <span id="filtered-count" class="ml-2 text-sm text-gray-400">（共 0 条记录）</span>
+                            </h3>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-cyber-blue/20">
+                                <thead class="bg-cyber-darker/80">
+                                    <tr id="table-header">
+                                        <!-- 表头将通过JavaScript动态生成 -->
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body" class="bg-cyber-darker divide-y divide-cyber-blue/20">
+                                    <!-- 表格数据将通过JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 分页控件 -->
+                        <div class="p-4 border-t border-cyber-blue/30 flex flex-col md:flex-row justify-between items-center">
+                            <div class="text-sm text-gray-400 mb-4 md:mb-0">
+                                显示 <span id="current-range">0-0</span> 条，共 <span id="total-pages">0</span> 页
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button id="prev-page" class="px-3 py-1 rounded border border-cyber-blue/30 bg-cyber-darker text-gray-400 hover:bg-cyber-blue/10 hover:text-cyber-blue disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <i class="fas fa-chevron-left text-xs"></i>
+                                </button>
+                                <div id="page-numbers" class="flex items-center space-x-1">
+                                    <!-- 页码将通过JavaScript动态生成 -->
+                                </div>
+                                <button id="next-page" class="px-3 py-1 rounded border border-cyber-blue/30 bg-cyber-darker text-gray-400 hover:bg-cyber-blue/10 hover:text-cyber-blue disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="bg-cyber-darker border-t border-cyber-blue/30 py-6">
+                <div class="container mx-auto px-4 text-center">
+                    <p class="text-gray-500">© 2024 人员信息管理系统 - <span class="text-cyber-blue">CYBERPUNK EDITION</span></p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
